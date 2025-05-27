@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from 'next/font/google';
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { ConvexClientProvider } from "./ConvexClientProvider";
-import { header as Header } from "./header";
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
+import { Header } from "./header";
+import { Toaster } from "sonner";
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,8 +20,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ConvexClientProvider>
+          <Toaster />
           <Header />
-          {children}</ConvexClientProvider>
+          {children}
+        </ConvexClientProvider>
       </body>
     </html>
   );
