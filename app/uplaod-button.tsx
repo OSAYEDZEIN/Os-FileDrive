@@ -11,17 +11,12 @@ import {
 } from "@/components/ui/dialog"
 
 import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignOutButton,
   useOrganization,
   useUser
 } from "@clerk/nextjs";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,7 +26,7 @@ import { Input } from "@/components/ui/input"
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { z } from "zod"
-import { title } from "process";
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { useState } from "react";
