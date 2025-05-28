@@ -7,7 +7,7 @@ import {
     CardTitle,
   } from "@/components/ui/card"
 import { Doc, Id } from "@/convex/_generated/dataModel";
-import { Download, Trash2 as DeleteIcon, TrashIcon, MoreVertical, ImageIcon, FileTextIcon, GanttChartIcon } from "lucide-react";
+import { Download, Trash2 as DeleteIcon, TrashIcon, MoreVertical, ImageIcon, FileTextIcon, GanttChartIcon, StarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -15,7 +15,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
-import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
+import { DropdownMenuItem, DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -35,6 +35,7 @@ import Image from "next/image";
       
 function FileCardActions({ file }: { file: Doc<"files"> }) {
   const deleteFile = useMutation(api.files.deleteFile);
+  const toggleFavorite = useMutation(api.files.toggleFavorite);
     const[isComfirmOpen,setIsComfirmOpen]=useState(false)
     return(
         
@@ -66,10 +67,22 @@ function FileCardActions({ file }: { file: Doc<"files"> }) {
     </AlertDialog>
 
         <DropdownMenu>
-  <DropdownMenuTrigger><MoreVertical/></DropdownMenuTrigger>
+  <DropdownMenuTrigger><MoreVertical/>
+  </DropdownMenuTrigger>
+  <DropdownMenuItem 
+  onClick={() => {
+    toggleFavorite({fileId: file._id})
+    }}
+    className="flex gap-2  items-center">
+        <StarIcon className="w-4 h-4"/>Favorite
+        </DropdownMenuItem>
+  <DropdownMenuSeparator />
+
   <DropdownMenuContent>
-    <DropdownMenuItem className="flex gap-2 text-red-500 items-center">
-        <TrashIcon className="w-4 h-4"/>Delete</DropdownMenuItem>
+    <DropdownMenuItem 
+    className="flex gap-2 text-red-500 items-center">
+        <TrashIcon className="w-4 h-4"/>Delete
+        </DropdownMenuItem>
   </DropdownMenuContent>
 </DropdownMenu>
         </>
