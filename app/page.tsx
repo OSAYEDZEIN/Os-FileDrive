@@ -1,213 +1,68 @@
-"use client";
+import Image from "next/image";
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignOutButton,
-  useOrganization,
-  useUser
-} from "@clerk/nextjs";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { z } from "zod"
-import { title } from "process";
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { useState } from "react";
-import { toast, Toaster } from "sonner";
-import { Loader2 } from "lucide-react";
-
-const formSchema = z.object({
-  title: z.string().min(1).max(200),
-  file: z.custom<File | null>(
-    (val) => val instanceof File || val === null,
-    { message: "Required" }
-  ),
-});
-
-export default function Home() {
-  const organization = useOrganization();
-  const user = useUser();
-  const generateUploadUrl = useMutation(api.files.generateUploadUrl);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      file: null,
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    console.log(values.file)
-    if (!values.file) return;
-    const postUrl = await generateUploadUrl();
-
-    const result = await fetch(postUrl, {
-      method: "POST",
-      headers: { "Content-Type": values.file.type },
-      body: values.file,
-    });
-    const { storageId } = await result.json();
-    if (!orgId) return;
-   
-    try{
-      await createFile({
-        name: values.title,
-        fileId: storageId,
-        orgId,
-      });
-      form.reset();
-
-      setIsFileDialogOpen(false);
-
-      toast.success("File uploaded successfully");
-    } catch (error) {
-      toast.error("Failed to upload file");
-    }
-
-
-    form.reset();
-
-    setIsFileDialogOpen(false);
-
-    toast("File Uploaded", {
-      description: "Now everyone can see your file"
-    });
-  }
-
-  let orgId: string | undefined = undefined;
-  if (organization.isLoaded && user.isLoaded) {
-    orgId = organization.organization?.id ?? user.user?.id;
-  }
-  
-  const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
-
-  const files = useQuery(api.files.getFiles, orgId ? { orgId } : "skip");
-  const createFile = useMutation(api.files.createFile);
-
+export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 dark:from-background dark:to-gray-900 flex flex-col items-center py-12 px-2">
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-primary drop-shadow-sm">Your Files</h1>
-          <Dialog open={isFileDialogOpen} onOpenChange={(isOpen) => {
-            setIsFileDialogOpen(isOpen);
-            form.reset();
-          }}>
-            <DialogTrigger asChild>
-              <Button
-                className="bg-gradient-to-r from-primary to-accent text-white px-6 py-2 rounded-lg shadow-md hover:scale-105 transition-transform"
-                onClick={() => {
-                  if (!orgId) return;
-                }}
-              >
-                <span className="font-semibold tracking-wide">Upload File</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md w-full rounded-xl shadow-xl">
-              <DialogHeader>
-                <DialogTitle className="mb-2 text-2xl font-bold text-primary">Upload Your File</DialogTitle>
-                <DialogDescription className="mb-4 text-muted-foreground">
-                  Select a file and give it a title. Your file will be visible to your organization.
-                </DialogDescription>
-              </DialogHeader>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter file title" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="file"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>File</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="file" 
-                            onChange={(e) => field.onChange(e.target.files?.[0])}
-                            onBlur={field.onBlur}
-                            name={field.name}
-                            ref={field.ref}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button 
-                  type="submit"
-                  disabled={form.formState.isSubmitting}
-                  className="flex gap-1 ">
-                    {form.formState.isSubmitting&& (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    )}
-                  </Button>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
+    <div className="bg-white">
+      <div className="relative isolate px-6 pt-14 lg:px-8">
+        <div
+          className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+          aria-hidden="true"
+        >
+          <div
+            className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
+            style={{
+              clipPath:
+                "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
+            }}
+          />
         </div>
-        <div className="mt-8 space-y-4">
-          {files?.length === 0 && (
-            <div className="text-center text-muted-foreground py-8">No files uploaded yet.</div>
-          )}
-          {files?.map((file) => (
-            <div
-              key={file._id}
-              className="flex items-center justify-between p-4 bg-white dark:bg-card rounded-lg card-shadow border hover:shadow-lg transition-shadow group"
-            >
-              <div className="flex flex-col">
-                <span className="font-medium text-lg text-primary group-hover:underline">{file.name}</span>
-                {/* Add more file info here if needed */}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-4 group-hover:bg-accent group-hover:text-primary"
-                onClick={() => {
-                  // Add download or view functionality here
-                }}
+        <div className="mx-auto max-w-2xl py-8">
+          <div className="text-center">
+            <Image
+              src="/logo.png"
+              width="200"
+              height="200"
+              alt="file drive logo"
+              className="inline-block mb-8"
+            />
+
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              The easiest way to upload and share files with your company
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-gray-600">
+              Make and account and start managing your files in less than a
+              minute.
+            </p>
+            <div className="mt-10 flex items-center justify-center gap-x-6">
+              <Link
+                href="/dashboard/files"
+                className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                View
-              </Button>
+                Get started
+              </Link>
+              <a
+                href="#"
+                className="text-sm font-semibold leading-6 text-gray-900"
+              >
+                Learn more <span aria-hidden="true">→</span>
+              </a>
             </div>
-          ))}
+          </div>
+        </div>
+        <div
+          className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
+          aria-hidden="true"
+        >
+          <div
+            className="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]"
+            style={{
+              clipPath:
+                "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
+            }}
+          />
         </div>
       </div>
-    </main>
+    </div>
   );
 }
