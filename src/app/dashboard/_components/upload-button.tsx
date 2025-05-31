@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 import { useOrganization, useUser } from "@clerk/nextjs";
 import {
   Form,
@@ -9,8 +9,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/src/components/ui/form";
+import { Input } from "@/src/components/ui/input";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/src/components/ui/dialog";
 import { Doc } from "@/convex/_generated/dataModel";
 
 import { z } from "zod";

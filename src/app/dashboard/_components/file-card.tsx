@@ -4,8 +4,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from "@/src/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
 import { formatRelative } from "date-fns";
 
 import { Doc } from "../../../../convex/_generated/dataModel";

@@ -5,7 +5,7 @@ import { Doc, Id } from "../../../../convex/_generated/dataModel";
 import { formatRelative } from "date-fns";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
 import { FileCardActions } from "./file-actions";
 
 function UserCell({ userId }: { userId: Id<"users"> }) {

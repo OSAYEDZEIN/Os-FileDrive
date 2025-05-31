@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 import clsx from "clsx";
 import { FileIcon, StarIcon, TrashIcon } from "lucide-react";
 import Link from "next/link";

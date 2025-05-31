@@ -10,16 +10,16 @@ import { SearchBar } from "./search-bar";
 import { useState } from "react";
 import { DataTable } from "./file-table";
 import { columns } from "./columns";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
 import {
   Select, 
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/src/components/ui/select";
 import { Doc } from "../../../../convex/_generated/dataModel";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/src/components/ui/label";
 
 function Placeholder() {
   return (
