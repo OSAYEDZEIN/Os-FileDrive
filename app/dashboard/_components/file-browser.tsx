@@ -12,7 +12,7 @@ import { DataTable } from "./file-table";
 import { columns } from "./columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Select,
+  Select, 
   SelectContent,
   SelectItem,
   SelectTrigger,
@@ -75,10 +75,10 @@ export function FileBrowser({
   const isLoading = files === undefined;
 
   const modifiedFiles =
-    files?.map((file) => ({
+    files?.map((file: Doc<"files">) => ({
       ...file,
       isFavorited: (favorites ?? []).some(
-        (favorite) => favorite.fileId === file._id
+        (favorite: Doc<"favorites">) => favorite.fileId === file._id
       ),
     })) ?? [];
 
@@ -134,7 +134,7 @@ export function FileBrowser({
 
         <TabsContent value="grid">
           <div className="grid grid-cols-3 gap-4">
-            {modifiedFiles?.map((file) => {
+            {modifiedFiles?.map((file: Doc<"files"> & { isFavorited: boolean; url: string | null }) => {
               return <FileCard key={file._id} file={file} />;
             })}
           </div>
