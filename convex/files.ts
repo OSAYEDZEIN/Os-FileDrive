@@ -38,7 +38,14 @@ export async function hasAccessToOrg(
     .first();
 
   if (!user) {
+    console.log("No user found for tokenIdentifier:", identity.tokenIdentifier);
     return null;
+  }
+
+  // Allow access if orgId is the user's own _id or tokenIdentifier (personal account)
+  if (orgId === user._id || orgId === user.tokenIdentifier) {
+    console.log("Access granted: orgId matches user's own id or tokenIdentifier");
+    return { user };
   }
 
   const hasAccess =
@@ -64,6 +71,16 @@ export const createFile = mutation({
 
     if (!hasAccess) {
       throw new ConvexError("you do not have access to this org");
+    }
+
+    // Strict: Prevent duplicate file names within the same org (excluding deleted files)
+    const filesWithSameOrg = await ctx.db
+      .query("files")
+      .withIndex("by_orgId", q => q.eq("orgId", args.orgId))
+      .collect();
+    const existing = filesWithSameOrg.find(file => file.name === args.name && !file.shouldDelete);
+    if (existing) {
+      throw new ConvexError(`A file named '${args.name}' already exists in this workspace. Please choose a unique name.`);
     }
 
     await ctx.db.insert("files", {

@@ -10,18 +10,21 @@ import { SearchBar } from "./search-bar";
 import { useState } from "react";
 import { DataTable } from "./file-table";
 import { columns } from "./columns";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Select, 
+  Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/src/components/ui/select";
+} from "@/components/ui/select";
 import { Doc } from "../../../../convex/_generated/dataModel";
-import { Label } from "@/src/components/ui/label";
+import { Label } from "@/components/ui/label";
 
-function Placeholder() {
+function Placeholder({ deletedOnly, favoritesOnly }: { deletedOnly?: boolean; favoritesOnly?: boolean }) {
+  let description = "You have no files, upload one now";
+  if (deletedOnly) description = "Trash is empty";
+  else if (favoritesOnly) description = "You have no favorite files";
   return (
     <div className="flex flex-col gap-8 w-full items-center mt-24">
       <Image
@@ -30,8 +33,8 @@ function Placeholder() {
         height="300"
         src="/empty.svg"
       />
-      <div className="text-2xl">You have no files, upload one now</div>
-      <UploadButton />
+      <div className="text-2xl">{description}</div>
+      {!deletedOnly && !favoritesOnly && <UploadButton />}
     </div>
   );
 }
@@ -75,10 +78,10 @@ export function FileBrowser({
   const isLoading = files === undefined;
 
   const modifiedFiles =
-    files?.map((file: Doc<"files">) => ({
+    files?.map((file) => ({
       ...file,
       isFavorited: (favorites ?? []).some(
-        (favorite: Doc<"favorites">) => favorite.fileId === file._id
+        (favorite) => favorite.fileId === file._id
       ),
     })) ?? [];
 
@@ -134,17 +137,19 @@ export function FileBrowser({
 
         <TabsContent value="grid">
           <div className="grid grid-cols-3 gap-4">
-            {modifiedFiles?.map((file: Doc<"files"> & { isFavorited: boolean; url: string | null }) => {
+            {modifiedFiles?.map((file) => {
               return <FileCard key={file._id} file={file} />;
             })}
           </div>
         </TabsContent>
         <TabsContent value="table">
-          <DataTable columns={columns} data={modifiedFiles} />
+          <div className="overflow-x-auto min-w-full">
+            <DataTable columns={columns} data={modifiedFiles} />
+          </div>
         </TabsContent>
       </Tabs>
 
-      {files?.length === 0 && <Placeholder />}
+      {files?.length === 0 && <Placeholder deletedOnly={deletedOnly} favoritesOnly={favoritesOnly} />}
     </div>
   );
 }

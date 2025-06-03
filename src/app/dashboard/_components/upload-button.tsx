@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/src/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { useOrganization, useUser } from "@clerk/nextjs";
 import {
   Form,
@@ -9,10 +9,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/src/components/ui/form";
-import { Input } from "@/src/components/ui/input";
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { api } from "../../../../convex/_generated/api";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/src/components/ui/dialog";
-import { Doc } from "@/convex/_generated/dataModel";
+} from "@/components/ui/dialog";
 
 import { z } from "zod";
 
@@ -29,7 +28,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileTextIcon, GanttChartIcon, ImageIcon } from "lucide-react";
+import { Doc } from "../../../../convex/_generated/dataModel";
 
 const formSchema = z.object({
   title: z.string().min(1).max(200),
@@ -56,42 +56,76 @@ export function UploadButton() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!orgId) return;
 
-    const postUrl = await generateUploadUrl();
+    const fileToUpload = values.file[0];
+    const fileType = fileToUpload.type;
 
-    const fileType = values.file[0].type;
-
-    const result = await fetch(postUrl, {
-      method: "POST",
-      headers: { "Content-Type": fileType },
-      body: values.file[0],
-    });
-    const { storageId } = await result.json();
-
+    // Mapping of MIME types to your Convex file 'type' enum
     const types = {
       "image/png": "image",
       "application/pdf": "pdf",
       "text/csv": "csv",
+      "image/jpeg": "image",
+      "image/jpg": "image",
+      "image/gif": "image",
+      "image/webp": "image",
+      "image/svg+xml": "image",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+      // Add more as needed, ensuring they match your `fileTypes` union in Convex
     } as Record<string, Doc<"files">["type"]>;
 
+    const typeToUpload = types[fileType];
+
+    // **IMPORTANT VALIDATION:** Check if the file type is supported
+    if (!typeToUpload) {
+      toast.error(`Unsupported file type: "${fileType}". Please upload a PNG, PDF, CSV, or common image format.`);
+      console.error("Attempted to upload unsupported file type:", fileType);
+      return; // Stop the submission if the type is not recognized
+    }
+
+    // Before starting upload
+    toast.dismiss();
+    const toastId = toast.loading("Uploading your file...");
+
     try {
+      // 1. Get a signed upload URL from Convex
+      const postUrl = await generateUploadUrl();
+
+      // 2. Upload the file directly to Convex storage
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": fileType }, // Use the actual file's MIME type
+        body: fileToUpload,
+      });
+
+      // Check if the storage upload was successful
+      if (!result.ok) {
+        throw new Error(`Failed to upload file to Convex storage: ${result.statusText}`);
+      }
+
+      const { storageId } = await result.json(); // Get the storage ID from the upload result
+
+      // 3. Call your Convex mutation to record file metadata
       await createFile({
         name: values.title,
         fileId: storageId,
         orgId,
-        type: types[fileType],
+        type: typeToUpload, // Always pass type
       });
 
       form.reset();
 
       setIsFileDialogOpen(false);
 
-      toast("File Uploaded", {
-        description: "Now everyone can view your file",
-      });
+      toast.success("File uploaded successfully!", { id: toastId, style: { background: "#22c55e", color: "white" } });
     } catch (err) {
-      toast("Something went wrong", {
-        description: "Your file could not be uploaded, try again later",
-      });
+      console.error("File upload error:", err);
+      toast.error(
+        "Something went wrong. Your file could not be uploaded, please try again later.",
+        { id: toastId }
+      );
+    } finally {
+      // Dismiss all toasts after a short delay
+      setTimeout(() => toast.dismiss(), 1500);
     }
   }
 
@@ -103,6 +137,16 @@ export function UploadButton() {
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
 
   const createFile = useMutation(api.files.createFile);
+
+  // Add this mapping for file type icons
+  const typeIcons = {
+    image: <ImageIcon />,
+    pdf: <FileTextIcon />,
+    docx: <FileTextIcon />, // Use the same icon for docx as for pdf
+    csv: <GanttChartIcon />,
+  } as Record<Doc<"files">["type"], React.ReactNode>;
+
+  const isPersonal = organization.isLoaded && !organization.organization;
 
   return (
     <Dialog
@@ -117,9 +161,11 @@ export function UploadButton() {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="mb-8">Upload your File Here</DialogTitle>
+          <DialogTitle className="mb-8">Upload your File</DialogTitle>
           <DialogDescription>
-            This file will be accessible by anyone in your organization
+            {isPersonal
+              ? "This file will be accessible only to you."
+              : "This file will be accessible by anyone in your organization."}
           </DialogDescription>
         </DialogHeader>
 

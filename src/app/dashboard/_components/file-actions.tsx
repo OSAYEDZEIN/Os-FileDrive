@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu";
 import {
   FileIcon,
   MoreVertical,
@@ -13,6 +13,8 @@ import {
   StarIcon,
   TrashIcon,
   UndoIcon,
+  Share2Icon,
+  ArrowDownToLine,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -23,12 +25,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/src/components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { toast } from "sonner";
 import { Protect } from "@clerk/nextjs";
+import { toast } from "sonner";
 
 export function FileCardActions({
   file,
@@ -49,10 +51,9 @@ export function FileCardActions({
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will mark the file for our deletion process. Files are
-              deleted periodically
+              This file will be deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -62,9 +63,7 @@ export function FileCardActions({
                 await deleteFile({
                   fileId: file._id,
                 });
-                toast("File marked for deletion", {
-                  description: "Your file will be deleted soon",
-                });
+                toast("File deleted.", { style: { background: "#ef4444", color: "white" } });
               }}
             >
               Continue
@@ -85,7 +84,18 @@ export function FileCardActions({
             }}
             className="flex gap-1 items-center cursor-pointer"
           >
-            <FileIcon className="w-4 h-4" /> Download
+            <ArrowDownToLine className="w-4 h-4" /> Download
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            onClick={() => {
+              if (!file.url) return;
+              navigator.clipboard.writeText(file.url);
+              toast.success("File link copied to clipboard!");
+            }}
+            className="flex gap-1 items-center cursor-pointer"
+          >
+            <Share2Icon className="w-4 h-4" /> Share
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -128,16 +138,20 @@ export function FileCardActions({
                   setIsConfirmOpen(true);
                 }
               }}
-              className="flex gap-1 items-center cursor-pointer"
+              className={
+                file.shouldDelete
+                  ? "flex gap-1 items-center cursor-pointer text-green-600"
+                  : "flex gap-1 items-center cursor-pointer text-red-600 hover:text-black group"
+              }
             >
               {file.shouldDelete ? (
-                <div className="flex gap-1 text-green-600 items-center cursor-pointer">
+                <>
                   <UndoIcon className="w-4 h-4" /> Restore
-                </div>
+                </>
               ) : (
-                <div className="flex gap-1 text-red-600 items-center cursor-pointer">
-                  <TrashIcon className="w-4 h-4" /> Delete
-                </div>
+                <>
+                  <TrashIcon className="w-4 h-4 text-red-600 group-hover:text-black" /> Delete
+                </>
               )}
             </DropdownMenuItem>
           </Protect>
