@@ -19,20 +19,27 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  showUserColumn?: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  showUserColumn = true,
 }: DataTableProps<TData, TValue>) {
+  // Filter out the 'User' column if showUserColumn is false
+  const filteredColumns = showUserColumn
+    ? columns
+    : columns.filter((col) => col.header !== "User");
+
   const table = useReactTable({
     data,
-    columns,
+    columns: filteredColumns,
     getCoreRowModel: getCoreRowModel(),
   });
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (

@@ -77,3 +77,21 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: none; }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 1.2s cubic-bezier(0.4,0,0.2,1) both;
+  }
+}
+
+/* Clerk OrganizationSwitcher: Make account text white */
+.cl-internal-organizationSwitcherText,
+.cl-organizationSwitcherText,
+.cl-organizationSwitcher-trigger,
+.cl-organizationSwitcher-trigger span {
+  color: #fff !important;
+}

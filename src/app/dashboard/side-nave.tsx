@@ -31,20 +31,21 @@ export function SideNav() {
   ];
 
   return (
-    <aside className="w-48 flex flex-col gap-2 bg-white border border-gray-200 rounded-xl shadow-sm py-6 px-2">
+    <aside className="w-56 flex flex-col gap-4 bg-white/20 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg py-8 px-4 text-white">
       {navItems.map(({ href, label, icon: Icon, active }) => (
-        <Link href={href} key={href}>
+        <Link href={href} key={href} className="w-full">
           <Button
             variant={active ? "default" : "ghost"}
             className={clsx(
-              "flex gap-2 w-full justify-start items-center transition-colors",
+              "flex gap-3 w-full justify-start items-center transition-colors text-lg font-semibold",
               {
-                "pointer-events-none": active,
-                "hover:bg-gray-200": !active,
+                "pointer-events-none bg-white text-gray-900 shadow-md": active,
+                "hover:bg-white/30 hover:text-white": !active,
+                "bg-transparent text-white": !active
               }
             )}
           >
-            <Icon className="w-5 h-5 text-inherit" />
+            <Icon className="w-6 h-6 text-inherit" />
             {label}
           </Button>
         </Link>

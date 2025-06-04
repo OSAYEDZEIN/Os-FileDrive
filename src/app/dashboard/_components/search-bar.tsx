@@ -49,7 +49,7 @@ export function SearchBar({
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input {...field} placeholder="your file names" />
+                  <Input {...field} placeholder="your file names" className="bg-white/20 text-white border border-white/20 rounded-lg placeholder-white px-4 py-3" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -57,13 +57,12 @@ export function SearchBar({
           />
 
           <Button
-            size="sm"
             type="submit"
             disabled={form.formState.isSubmitting}
-            className="flex gap-1"
+            className="flex gap-1 bg-white text-gray-900 hover:bg-gray-200 border-none px-6 py-3 rounded-lg"
           >
             {form.formState.isSubmitting && (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin text-white" />
             )}
             <SearchIcon /> Search
           </Button>

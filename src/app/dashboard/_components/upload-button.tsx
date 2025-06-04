@@ -157,7 +157,7 @@ export function UploadButton() {
       }}
     >
       <DialogTrigger asChild>
-        <Button>Upload File</Button>
+      <Button className="bg-white text-gray-900 hover:bg-gray-200 border-none px-6 py-3 rounded-lg transition-colors">Upload File</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

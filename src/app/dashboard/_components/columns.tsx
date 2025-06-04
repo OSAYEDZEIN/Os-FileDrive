@@ -33,7 +33,7 @@ function FileTypeCell({ type }: { type: Doc<"files">["type"] }) {
     csv: <GanttChartIcon className="w-5 h-5 text-gray-900" />,
   };
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center w-full h-full">
       {icons[type] || <FileTextIcon className="w-5 h-5 text-gray-400" />}
     </div>
   );
@@ -51,8 +51,12 @@ export const columns: ColumnDef<
   },
   {
     accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => <FileTypeCell type={row.original.type} />,
+    header: () => (
+      <div className="flex flex-col items-center">
+        <span>Type</span>
+      </div>
+    ),
+    cell: ({ row }) => <div className="flex flex-col items-center w-full h-full"><FileTypeCell type={row.original.type} /></div>,
   },
   {
     header: "User",
@@ -61,26 +65,32 @@ export const columns: ColumnDef<
     },
   },
   {
-    header: "Uploaded On",
+    accessorKey: "_creationTime",
+    header: () => <span className="pl-2">Uploaded On</span>,
     cell: ({ row }) => {
       return (
-        <span className="text-gray-500 text-sm">
-          {formatRelative(new Date(row.original._creationTime), new Date())}
-        </span>
+        <div className="flex items-center h-full w-full pl-2">
+          <span className="text-gray-400 text-xs">
+            {formatRelative(new Date(row.original._creationTime), new Date())}
+          </span>
+        </div>
       );
     },
   },
   {
-    header: "Actions",
-    cell: ({ row }) => {
-      return (
-        <div className="flex justify-center">
-          <FileCardActions
-            file={row.original}
-            isFavorited={row.original.isFavorited}
-          />
-        </div>
-      );
-    },
+    accessorKey: "actions",
+    header: () => (
+      <div className="flex flex-col items-center">
+        <span>Actions</span>
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="flex flex-col items-center w-full h-full">
+        <FileCardActions
+          file={row.original}
+          isFavorited={row.original.isFavorited}
+        />
+      </div>
+    ),
   },
 ];

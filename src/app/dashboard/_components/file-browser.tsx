@@ -33,7 +33,7 @@ function Placeholder({ deletedOnly, favoritesOnly }: { deletedOnly?: boolean; fa
         height="300"
         src="/empty.svg"
       />
-      <div className="text-2xl">{description}</div>
+      <div className="text-2xl text-white">{description}</div>
       {!deletedOnly && !favoritesOnly && <UploadButton />}
     </div>
   );
@@ -88,12 +88,18 @@ export function FileBrowser({
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">{title}</h1>
+        <h1 className="text-4xl font-bold text-white">{title}</h1>
 
         <SearchBar query={query} setQuery={setQuery} />
 
         <UploadButton />
       </div>
+
+      {deletedOnly && (
+        <div className="mb-4 p-3 rounded bg-red-100 text-red-600 border border-red-200 text-sm">
+          Files in Trash will be permanently deleted after 24 hours.
+        </div>
+      )}
 
       <Tabs defaultValue="grid">
         <div className="flex justify-between items-center">
@@ -108,21 +114,21 @@ export function FileBrowser({
           </TabsList>
 
           <div className="flex gap-2 items-center">
-            <Label htmlFor="type-select">Type Filter</Label>
+            <Label htmlFor="type-select" className="text-white">Type Filter</Label>
             <Select
               value={type}
               onValueChange={(newType) => {
                 setType(newType as any);
               }}
             >
-              <SelectTrigger id="type-select" className="w-[180px]">
-                <SelectValue />
+              <SelectTrigger id="type-select" className="w-[180px] bg-white/20 text-white border border-white/20">
+                <SelectValue className="text-white" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="image">Image</SelectItem>
-                <SelectItem value="csv">CSV</SelectItem>
-                <SelectItem value="pdf">PDF</SelectItem>
+              <SelectContent className="bg-white text-gray-900">
+                <SelectItem value="all" className="text-gray-900">All</SelectItem>
+                <SelectItem value="image" className="text-gray-900">Image</SelectItem>
+                <SelectItem value="csv" className="text-gray-900">CSV</SelectItem>
+                <SelectItem value="pdf" className="text-gray-900">PDF</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -130,8 +136,8 @@ export function FileBrowser({
 
         {isLoading && (
           <div className="flex flex-col gap-8 w-full items-center mt-24">
-            <Loader2 className="h-32 w-32 animate-spin text-gray-500" />
-            <div className="text-2xl">Loading your files...</div>
+            <Loader2 className="h-32 w-32 animate-spin text-white" />
+            <div className="text-2xl text-white">Loading your files...</div>
           </div>
         )}
 
@@ -144,7 +150,7 @@ export function FileBrowser({
         </TabsContent>
         <TabsContent value="table">
           <div className="overflow-x-auto min-w-full">
-            <DataTable columns={columns} data={modifiedFiles} />
+            <DataTable columns={columns} data={modifiedFiles} showUserColumn={!!organization.organization} />
           </div>
         </TabsContent>
       </Tabs>

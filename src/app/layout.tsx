@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={inter.className + " min-h-screen bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-700"}>
         <ConvexClientProvider>
           <Toaster />
           <Header />

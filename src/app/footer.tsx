@@ -2,17 +2,16 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-gray-200 bg-white py-6 mt-16">
-      <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-gray-500 text-sm">
-        <div className="font-semibold text-gray-700">FileDrive</div>
-        <div className="flex gap-4">
-          <Link className="hover:text-gray-900 transition-colors" href="/privacy">
+    <footer className="w-full bg-transparent py-6 shadow-inner border-t border-white/10">
+      <div className="max-w-3xl mx-auto flex flex-col items-center gap-4 px-4">
+        <div className="flex flex-wrap justify-center gap-6 bg-white/20 backdrop-blur-sm rounded-full px-6 py-2 shadow-sm">
+          <Link className="text-white/90 hover:text-white font-medium transition-colors" href="/privacy">
             Privacy Policy
           </Link>
-          <Link className="hover:text-gray-900 transition-colors" href="/terms-of-service">
+          <Link className="text-white/90 hover:text-white font-medium transition-colors" href="/terms-of-service">
             Terms of Service
           </Link>
-          <Link className="hover:text-gray-900 transition-colors" href="/about">
+          <Link className="text-white/90 hover:text-white font-medium transition-colors" href="/about">
             About
           </Link>
         </div>
