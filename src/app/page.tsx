@@ -1,7 +1,37 @@
+"use client";
 import Image from "next/image";
-import Link from "next/link";
+import { useUser, SignIn } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useCallback, useState, useEffect } from "react";
 
 export default function LandingPage() {
+  const { isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
+  const [showSignIn, setShowSignIn] = useState(false);
+
+  // Always redirect if signed in
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push("/dashboard/files");
+    }
+  }, [isSignedIn, isLoaded, router]);
+
+  const handleGetStarted = useCallback(() => {
+    if (isSignedIn) {
+      router.push("/dashboard/files");
+    } else {
+      setShowSignIn(true);
+    }
+  }, [isSignedIn, router]);
+
+  if (isLoaded && showSignIn && !isSignedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-700">
+        <SignIn routing="hash" />
+      </div>
+    );
+  }
+
   return (
     <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-700 relative overflow-hidden animate-fadeIn">
       {/* Decorative blurred circles */}
@@ -16,12 +46,12 @@ export default function LandingPage() {
           We provide reliable cloud storage for your information. Our team ensures the security and accessibility of your data at all times.
         </p>
         <div className="flex justify-start">
-          <Link
-            href="/dashboard/files"
+          <button
+            onClick={handleGetStarted}
             className="inline-block rounded-full bg-gradient-to-r from-cyan-400 to-teal-500 text-white px-6 py-3 font-semibold text-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-200 w-auto"
           >
             Get Started
-          </Link>
+          </button>
         </div>
       </section>
       {/* Right Section */}

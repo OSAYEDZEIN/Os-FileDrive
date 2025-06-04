@@ -97,7 +97,7 @@ export function FileBrowser({
 
       {deletedOnly && (
         <div className="mb-4 p-3 rounded bg-red-100 text-red-600 border border-red-200 text-sm">
-          Files in Trash will be permanently deleted after 24 hours.
+           WARNING: Files in Trash will be permanently deleted after 24 hours.
         </div>
       )}
 

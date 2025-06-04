@@ -108,7 +108,7 @@ export function FileCardActions({
           >
             {isFavorited ? (
               <div className="flex gap-1 items-center">
-                <StarIcon className="w-4 h-4" /> Unfavorite
+                <StarIcon className="w-4 h-4" fill="#eab308" stroke="#eab308" /> Unfavorite
               </div>
             ) : (
               <div className="flex gap-1 items-center">
