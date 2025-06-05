@@ -17,6 +17,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -26,9 +27,9 @@ import { z } from "zod";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { Loader2, FileTextIcon, GanttChartIcon, ImageIcon } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Doc } from "../../../../convex/_generated/dataModel";
 
 const formSchema = z.object({
@@ -51,7 +52,13 @@ export function UploadButton() {
     },
   });
 
-  const fileRef = form.register("file");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { ref, ...rest } = form.register("file", {
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSelectedFile(e.target.files?.[0] || null);
+    },
+  });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!orgId) return;
@@ -137,32 +144,22 @@ export function UploadButton() {
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
 
   const createFile = useMutation(api.files.createFile);
-
-  // Add this mapping for file type icons
-  const typeIcons = {
-    image: <ImageIcon />,
-    pdf: <FileTextIcon />,
-    docx: <FileTextIcon />, // Use the same icon for docx as for pdf
-    csv: <GanttChartIcon />,
-  } as Record<Doc<"files">["type"], React.ReactNode>;
-
   const isPersonal = organization.isLoaded && !organization.organization;
 
   return (
-    <Dialog
-      open={isFileDialogOpen}
-      onOpenChange={(isOpen) => {
-        setIsFileDialogOpen(isOpen);
-        form.reset();
-      }}
-    >
+    <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
       <DialogTrigger asChild>
-      <Button className="bg-white text-gray-900 hover:bg-gray-200 border-none px-6 py-3 rounded-lg transition-colors">Upload File</Button>
+        <Button 
+          className="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-white/10 text-white hover:bg-gradient-to-r hover:from-cyan-500/30 hover:to-teal-500/30 hover:shadow-lg hover:shadow-cyan-500/20 transition-all"
+          onClick={() => setIsFileDialogOpen(true)}
+        >
+          Upload File
+        </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="mb-8">Upload your File</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="bg-gray-900 border border-white/10 text-white sm:rounded-xl overflow-hidden w-full max-w-md z-[100]">
+        <DialogHeader className="px-6 pt-6 pb-4">
+          <DialogTitle className="text-xl font-semibold text-white mb-1">Upload your File</DialogTitle>
+          <DialogDescription className="text-gray-300 text-sm">
             {isPersonal
               ? "This file will be accessible only to you."
               : "This file will be accessible by anyone in your organization."}
@@ -171,17 +168,21 @@ export function UploadButton() {
 
         <div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel className="text-sm font-medium text-gray-300">Title</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input 
+                        {...field} 
+                        className="bg-white/5 border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent"
+                        placeholder="Enter file name"
+                      />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-red-400 text-xs" />
                   </FormItem>
                 )}
               />
@@ -189,26 +190,68 @@ export function UploadButton() {
               <FormField
                 control={form.control}
                 name="file"
-                render={() => (
+                render={({ field: { value, onChange, ...field } }) => (
                   <FormItem>
-                    <FormLabel>File</FormLabel>
+                    <FormLabel className="text-sm font-medium text-gray-300">File</FormLabel>
                     <FormControl>
-                      <Input type="file" {...fileRef} />
+                      <div className="flex flex-col gap-2">
+                        <div className="relative group">
+                          <div className="relative h-10 w-full">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-medium whitespace-nowrap">
+                                Choose file
+                              </div>
+                            </div>
+                            <Input 
+                              type="file" 
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              {...rest}
+                              ref={(e) => {
+                                ref(e);
+                                fileInputRef.current = e;
+                              }}
+                            />
+                          </div>
+                          <div className="mt-2 h-10 w-full bg-white/5 rounded-lg flex items-center justify-center text-sm text-gray-400 px-4 truncate">
+                            {selectedFile?.name || 'No file chosen'}
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500 text-center">
+                          Supported formats: PNG, JPG, PDF, CSV, DOCX
+                        </p>
+                      </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-red-400 text-xs" />
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                disabled={form.formState.isSubmitting}
-                className="flex gap-1"
-              >
-                {form.formState.isSubmitting && (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                )}
-                Submit
-              </Button>
+              <DialogFooter className="px-6 py-4 border-t border-white/10 mt-4 gap-3 justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    form.reset();
+                    setIsFileDialogOpen(false);
+                  }}
+                  className="px-6 h-10 rounded-lg border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={form.formState.isSubmitting}
+                  className="px-6 h-10 rounded-lg bg-gradient-to-r from-cyan-500/90 to-teal-500/90 hover:from-cyan-500 hover:to-teal-500 transition-all border-0 text-white font-medium"
+                >
+                  {form.formState.isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    'Upload File'
+                  )}
+                </Button>
+              </DialogFooter>
             </form>
           </Form>
         </div>

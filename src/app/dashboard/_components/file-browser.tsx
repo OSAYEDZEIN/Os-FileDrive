@@ -7,7 +7,7 @@ import { FileCard } from "./file-card";
 import Image from "next/image";
 import { GridIcon, Loader2, RowsIcon } from "lucide-react";
 import { SearchBar } from "./search-bar";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DataTable } from "./file-table";
 import { columns } from "./columns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,19 +22,11 @@ import { Doc } from "../../../../convex/_generated/dataModel";
 import { Label } from "@/components/ui/label";
 
 function Placeholder({ deletedOnly, favoritesOnly }: { deletedOnly?: boolean; favoritesOnly?: boolean }) {
-  let description = "You have no files, upload one now";
-  if (deletedOnly) description = "Trash is empty";
-  else if (favoritesOnly) description = "You have no favorite files";
+  if (deletedOnly || favoritesOnly) return null;
+  
   return (
-    <div className="flex flex-col gap-8 w-full items-center mt-24">
-      <Image
-        alt="an image of a picture and directory icon"
-        width="300"
-        height="300"
-        src="/empty.svg"
-      />
-      <div className="text-2xl text-white">{description}</div>
-      {!deletedOnly && !favoritesOnly && <UploadButton />}
+    <div className="w-full flex justify-center mt-16">
+      <UploadButton />
     </div>
   );
 }
@@ -48,6 +40,7 @@ export function FileBrowser({
   favoritesOnly?: boolean;
   deletedOnly?: boolean;
 }) {
+
   const organization = useOrganization();
   const user = useUser();
   const [query, setQuery] = useState("");
@@ -75,7 +68,8 @@ export function FileBrowser({
         }
       : "skip"
   );
-  const isLoading = files === undefined;
+  
+  const isLoading = files === undefined || !organization.isLoaded || !user.isLoaded;
 
   const modifiedFiles =
     files?.map((file) => ({
@@ -85,14 +79,22 @@ export function FileBrowser({
       ),
     })) ?? [];
 
+  // Reset state when organization or user changes
+  useEffect(() => {
+    setQuery("");
+    setType("all");
+  }, [organization.organization?.id, user.user?.id]);
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
+    <div key={`${organization.organization?.id}-${user.user?.id}`}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h1 className="text-4xl font-bold text-white">{title}</h1>
-
-        <SearchBar query={query} setQuery={setQuery} />
-
-        <UploadButton />
+        <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <SearchBar query={query} setQuery={setQuery} />
+          <div className="w-full sm:w-auto">
+            <UploadButton />
+          </div>
+        </div>
       </div>
 
       {deletedOnly && (
@@ -101,15 +103,22 @@ export function FileBrowser({
         </div>
       )}
 
-      <Tabs defaultValue="grid">
-        <div className="flex justify-between items-center">
-          <TabsList className="mb-2">
-            <TabsTrigger value="grid" className="flex gap-2 items-center">
-              <GridIcon />
-              Grid
+      <Tabs defaultValue="grid" className="space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <TabsList className="w-full sm:w-auto bg-white/5 border border-white/10 p-1 rounded-lg">
+            <TabsTrigger 
+              value="grid" 
+              className="flex gap-2 items-center px-4 py-2 rounded-md data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-sm transition-colors"
+            >
+              <GridIcon className="w-4 h-4" />
+              <span>Grid</span>
             </TabsTrigger>
-            <TabsTrigger value="table" className="flex gap-2 items-center">
-              <RowsIcon /> Table
+            <TabsTrigger 
+              value="table" 
+              className="flex gap-2 items-center px-4 py-2 rounded-md data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-sm transition-colors"
+            >
+              <RowsIcon className="w-4 h-4" />
+              <span>Table</span>
             </TabsTrigger>
           </TabsList>
 
@@ -141,12 +150,26 @@ export function FileBrowser({
           </div>
         )}
 
-        <TabsContent value="grid">
-          <div className="grid grid-cols-3 gap-4">
-            {modifiedFiles?.map((file) => {
-              return <FileCard key={file._id} file={file} />;
-            })}
-          </div>
+        <TabsContent value="grid" className="mt-6">
+          {modifiedFiles?.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {modifiedFiles.map((file) => (
+                <FileCard key={file._id} file={file} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center rounded-xl border-2 border-dashed border-white/20">
+              <div className="text-5xl mb-4">📁</div>
+              <h3 className="text-lg font-medium text-white mb-1">No files found</h3>
+              <p className="text-sm text-gray-400 max-w-md">
+                {favoritesOnly 
+                  ? "You don't have any favorite files yet."
+                  : deletedOnly 
+                  ? "Your trash is empty"
+                  : "Upload your first file to get started using the button above"}
+              </p>
+            </div>
+          )}
         </TabsContent>
         <TabsContent value="table">
           <div className="overflow-x-auto min-w-full">

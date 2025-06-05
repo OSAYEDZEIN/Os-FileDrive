@@ -37,7 +37,7 @@ export function SearchBar({
   }
 
   return (
-    <div>
+    <div className="w-full max-w-xl">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -47,24 +47,31 @@ export function SearchBar({
             control={form.control}
             name="query"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="w-full">
                 <FormControl>
-                  <Input {...field} placeholder="your file names" className="bg-white/20 text-white border border-white/20 rounded-lg placeholder-white px-4 py-3" />
+                  <div className="relative">
+                    <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search files..."
+                      className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-200 rounded-lg"
+                      {...field}
+                    />
+                  </div>
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-red-400 text-xs mt-1" />
               </FormItem>
             )}
           />
-
-          <Button
-            type="submit"
+          <Button 
+            type="submit" 
             disabled={form.formState.isSubmitting}
-            className="flex gap-1 bg-white text-gray-900 hover:bg-gray-200 border-none px-6 py-3 rounded-lg"
+            className="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-white/10 text-white hover:bg-gradient-to-r hover:from-cyan-500/30 hover:to-teal-500/30 hover:shadow-lg hover:shadow-cyan-500/20 transition-all px-4 py-2 h-10"
           >
-            {form.formState.isSubmitting && (
-              <Loader2 className="h-4 w-4 animate-spin text-white" />
+            {form.formState.isSubmitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <span>Search</span>
             )}
-            <SearchIcon /> Search
           </Button>
         </form>
       </Form>

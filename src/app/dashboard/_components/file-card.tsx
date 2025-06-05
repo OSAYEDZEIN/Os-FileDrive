@@ -108,26 +108,60 @@ export function FileCard({
     <>
       <Dialog open={open} onOpenChange={setOpen}>
         <Card
-          className="transition-all duration-200 hover:shadow-lg hover:border-gray-300 bg-white cursor-pointer"
+          className="group relative h-full flex flex-col transition-all duration-200 hover:shadow-xl hover:border-white/20 border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden hover:scale-[1.02]"
           onDoubleClick={() => setOpen(true)}
         >
-          <CardHeader className="relative">
-            <CardTitle className="flex gap-2 text-base font-semibold text-gray-900">
-              <div className="flex justify-center">{typeIcons[file.type]}</div>{" "}
-              {file.name}
-            </CardTitle>
-            <div className="absolute top-2 right-2">
-              <FileCardActions isFavorited={file.isFavorited} file={file} />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          
+          <CardHeader className="relative z-10 p-4 pb-2">
+            <div className="flex items-start justify-between gap-2">
+              <CardTitle className="text-sm font-medium text-white line-clamp-2 leading-tight">
+                {file.name}
+              </CardTitle>
+              <div className="flex-shrink-0">
+                <FileCardActions isFavorited={file.isFavorited} file={file} />
+              </div>
+            </div>
+            <div className="mt-1 flex items-center gap-1">
+              <div className="text-gray-400">
+                {typeIcons[file.type]}
+              </div>
+              <span className="text-xs text-gray-400">
+                {file.type.toUpperCase()}
+              </span>
             </div>
           </CardHeader>
-          <CardContent className="h-[200px] flex justify-center items-center">
-            {file.type === "image" && file.url && (
-              <Image alt={file.name} width="200" height="100" src={file.url} />
+          
+          <CardContent className="flex-1 p-4 pt-0 flex items-center justify-center">
+            {file.type === "image" && file.url ? (
+              <div className="relative w-full h-40 rounded-lg overflow-hidden bg-white/5 border border-white/5">
+                <Image 
+                  alt={file.name} 
+                  src={file.url}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  sizes="(max-width: 768px) 150px, 200px"
+                />
+              </div>
+            ) : file.type === "csv" ? (
+              <div className="flex flex-col items-center justify-center w-full h-40 p-4 bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 rounded-lg border border-emerald-500/20">
+                <GanttChartIcon className="w-10 h-10 text-emerald-400" />
+                <span className="text-xs text-gray-300 mt-2 font-medium">CSV File</span>
+              </div>
+            ) : file.type === "pdf" ? (
+              <div className="flex flex-col items-center justify-center w-full h-40 p-4 bg-gradient-to-br from-red-500/10 to-red-600/10 rounded-lg border border-red-500/20">
+                <FileTextIcon className="w-10 h-10 text-red-400" />
+                <span className="text-xs text-gray-300 mt-2 font-medium">PDF Document</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center w-full h-40 p-4 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-lg border border-blue-500/20">
+                <FileTextIcon className="w-10 h-10 text-blue-400" />
+                <span className="text-xs text-gray-300 mt-2 font-medium">File</span>
+              </div>
             )}
-            {file.type === "csv" && <GanttChartIcon className="w-20 h-20 text-gray-300" />}
-            {file.type === "pdf" && <FileTextIcon className="w-20 h-20 text-gray-300" />}
           </CardContent>
-          <CardFooter className="items-center px-8 [.border-t]:pt-6 flex justify-between">
+          
+          <CardFooter className="p-4 pt-2 border-t border-white/10">
             <div className="flex gap-2 text-xs text-gray-500 w-40 items-center">
               <Avatar className="w-6 h-6">
                 <AvatarImage src={userProfile?.image} />

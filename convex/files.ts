@@ -44,12 +44,11 @@ export async function hasAccessToOrg(
 
   // Allow access if orgId is the user's own _id or tokenIdentifier (personal account)
   if (orgId === user._id || orgId === user.tokenIdentifier) {
-    console.log("Access granted: orgId matches user's own id or tokenIdentifier");
     return { user };
   }
 
   const hasAccess =
-    user.orgIds.some((item) => item.orgId === orgId) ||
+    user.orgIds?.some((item) => item.orgId === orgId) ||
     user.tokenIdentifier.includes(orgId);
 
   if (!hasAccess) {
@@ -57,6 +56,35 @@ export async function hasAccessToOrg(
   }
 
   return { user };
+}
+
+async function hasAccessToFile(
+  ctx: QueryCtx | MutationCtx,
+  fileId: Id<"files">
+) {
+  // First check if file exists
+  const file = await ctx.db.get(fileId);
+  if (!file) {
+    return null;
+  }
+
+  // Then check organization access
+  const hasAccess = await hasAccessToOrg(ctx, file.orgId);
+  if (!hasAccess) {
+    return null;
+  }
+
+  return { user: hasAccess.user, file };
+}
+
+function assertCanDeleteFile(user: Doc<"users">, file: Doc<"files">) {
+  const canDelete =
+    file.userId === user._id ||
+    user.orgIds?.find((org) => org.orgId === file.orgId)?.role === "admin";
+
+  if (!canDelete) {
+    throw new ConvexError("you do not have permission to modify this file");
+  }
 }
 
 export const createFile = mutation({
@@ -172,23 +200,23 @@ export const deleteAllFiles = internalMutation({
   },
 });
 
-function assertCanDeleteFile(user: Doc<"users">, file: Doc<"files">) {
-  const canDelete =
-    file.userId === user._id ||
-    user.orgIds.find((org) => org.orgId === file.orgId)?.role === "admin";
-
-  if (!canDelete) {
-    throw new ConvexError("you have no acces to delete this file");
-  }
-}
-
 export const deleteFile = mutation({
   args: { fileId: v.id("files") },
   async handler(ctx, args) {
-    const access = await hasAccessToFile(ctx, args.fileId);
+    // Check if file exists first
+    const file = await ctx.db.get(args.fileId);
+    if (!file) {
+      throw new ConvexError("File not found");
+    }
 
+    // Check if file is already deleted
+    if (file.shouldDelete) {
+      throw new ConvexError("File is already deleted");
+    }
+
+    const access = await hasAccessToFile(ctx, args.fileId);
     if (!access) {
-      throw new ConvexError("no access to file");
+      throw new ConvexError("You do not have access to this file");
     }
 
     assertCanDeleteFile(access.user, access.file);
@@ -202,14 +230,27 @@ export const deleteFile = mutation({
 export const restoreFile = mutation({
   args: { fileId: v.id("files") },
   async handler(ctx, args) {
-    const access = await hasAccessToFile(ctx, args.fileId);
-
-    if (!access) {
-      throw new ConvexError("no access to file");
+    // Check if file exists first
+    const file = await ctx.db.get(args.fileId);
+    if (!file) {
+      throw new ConvexError("File not found");
     }
 
+    // Check if file is not deleted
+    if (!file.shouldDelete) {
+      throw new ConvexError("File is not deleted and cannot be restored");
+    }
+
+    // Check access permissions
+    const access = await hasAccessToFile(ctx, args.fileId);
+    if (!access) {
+      throw new ConvexError("You do not have access to this file");
+    }
+
+    // Check if user can restore (same permissions as delete)
     assertCanDeleteFile(access.user, access.file);
 
+    // Restore the file
     await ctx.db.patch(args.fileId, {
       shouldDelete: false,
     });
@@ -219,10 +260,20 @@ export const restoreFile = mutation({
 export const toggleFavorite = mutation({
   args: { fileId: v.id("files") },
   async handler(ctx, args) {
-    const access = await hasAccessToFile(ctx, args.fileId);
+    // Check if file exists first
+    const file = await ctx.db.get(args.fileId);
+    if (!file) {
+      throw new ConvexError("File not found");
+    }
 
+    // Don't allow favoriting deleted files
+    if (file.shouldDelete) {
+      throw new ConvexError("Cannot favorite a deleted file");
+    }
+
+    const access = await hasAccessToFile(ctx, args.fileId);
     if (!access) {
-      throw new ConvexError("no access to file");
+      throw new ConvexError("You do not have access to this file");
     }
 
     const favorite = await ctx.db
@@ -266,22 +317,3 @@ export const getAllFavorites = query({
     return favorites;
   },
 });
-
-async function hasAccessToFile(
-  ctx: QueryCtx | MutationCtx,
-  fileId: Id<"files">
-) {
-  const file = await ctx.db.get(fileId);
-
-  if (!file) {
-    return null;
-  }
-
-  const hasAccess = await hasAccessToOrg(ctx, file.orgId);
-
-  if (!hasAccess) {
-    return null;
-  }
-
-  return { user: hasAccess.user, file };
-}

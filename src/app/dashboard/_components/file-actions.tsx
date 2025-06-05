@@ -49,42 +49,58 @@ export function FileCardActions({
   return (
     <>
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-gray-900 border border-white/10 text-white">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-white">Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
               This file will be deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="bg-transparent hover:bg-white/10 border-white/10 text-white hover:text-white">
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
                 await deleteFile({
                   fileId: file._id,
                 });
-                toast("File deleted.", { style: { background: "#ef4444", color: "white" } });
+                toast("File deleted.", { 
+                  style: { 
+                    background: "#ef4444", 
+                    color: "white",
+                    border: '1px solid #ef4444/20',
+                    backdropFilter: 'blur(10px)'
+                  } 
+                });
               }}
+              className="bg-gradient-to-r from-red-500/90 to-red-600/90 hover:from-red-500 hover:to-red-600 transition-all border-0 text-white"
             >
-              Continue
+              Delete Permanently
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <MoreVertical />
+        <DropdownMenuTrigger asChild>
+          <button className="p-1.5 rounded-full hover:bg-white/10 transition-colors focus:outline-none">
+            <MoreVertical className="w-4 h-4 text-gray-300" />
+          </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent 
+          className="bg-gray-900 border border-white/10 backdrop-blur-lg shadow-xl min-w-[180px] p-1.5 rounded-xl overflow-hidden"
+          align="end"
+        >
           <DropdownMenuItem
             onClick={() => {
               if (!file.url) return;
               window.open(file.url, "_blank");
             }}
-            className="flex gap-1 items-center cursor-pointer"
+            className="flex gap-2 items-center px-3 py-2 text-sm rounded-lg cursor-pointer text-gray-200 hover:bg-white/10 focus:bg-white/10 focus:text-white"
           >
-            <ArrowDownToLine className="w-4 h-4" /> Download
+            <ArrowDownToLine className="w-4 h-4" />
+            <span>Download</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -93,9 +109,10 @@ export function FileCardActions({
               navigator.clipboard.writeText(file.url);
               toast.success("File link copied to clipboard!");
             }}
-            className="flex gap-1 items-center cursor-pointer"
+            className="flex gap-2 items-center px-3 py-2 text-sm rounded-lg cursor-pointer text-gray-200 hover:bg-white/10 focus:bg-white/10 focus:text-white"
           >
-            <Share2Icon className="w-4 h-4" /> Share
+            <Share2Icon className="w-4 h-4" />
+            <span>Share</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -104,16 +121,18 @@ export function FileCardActions({
                 fileId: file._id,
               });
             }}
-            className="flex gap-1 items-center cursor-pointer"
+            className="flex gap-2 items-center px-3 py-2 text-sm rounded-lg cursor-pointer text-gray-200 hover:bg-white/10 focus:bg-white/10 focus:text-white"
           >
             {isFavorited ? (
-              <div className="flex gap-1 items-center">
-                <StarIcon className="w-4 h-4" fill="#eab308" stroke="#eab308" /> Unfavorite
-              </div>
+              <>
+                <StarIcon className="w-4 h-4 text-yellow-400" fill="#eab308" />
+                <span>Unfavorite</span>
+              </>
             ) : (
-              <div className="flex gap-1 items-center">
-                <StarHalf className="w-4 h-4" /> Favorite
-              </div>
+              <>
+                <StarHalf className="w-4 h-4 text-gray-300" />
+                <span>Favorite</span>
+              </>
             )}
           </DropdownMenuItem>
 
@@ -127,7 +146,7 @@ export function FileCardActions({
             }}
             fallback={<></>}
           >
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="bg-white/10 my-1" />
             <DropdownMenuItem
               onClick={() => {
                 if (file.shouldDelete) {
@@ -140,17 +159,19 @@ export function FileCardActions({
               }}
               className={
                 file.shouldDelete
-                  ? "flex gap-1 items-center cursor-pointer text-green-600"
-                  : "flex gap-1 items-center cursor-pointer text-red-600 hover:text-black group"
+                  ? "flex gap-2 items-center px-3 py-2 text-sm rounded-lg cursor-pointer text-green-400 hover:bg-white/10 focus:bg-white/10 focus:text-green-300"
+                  : "flex gap-2 items-center px-3 py-2 text-sm rounded-lg cursor-pointer text-red-400 hover:bg-red-500/10 hover:text-red-300 focus:bg-red-500/10 focus:text-red-300"
               }
             >
               {file.shouldDelete ? (
                 <>
-                  <UndoIcon className="w-4 h-4" /> Restore
+                  <UndoIcon className="w-4 h-4" />
+                  <span>Restore</span>
                 </>
               ) : (
                 <>
-                  <TrashIcon className="w-4 h-4 text-red-600 group-hover:text-black" /> Delete
+                  <TrashIcon className="w-4 h-4" />
+                  <span>Delete</span>
                 </>
               )}
             </DropdownMenuItem>
