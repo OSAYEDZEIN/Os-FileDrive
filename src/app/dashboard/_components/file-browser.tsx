@@ -87,13 +87,18 @@ export function FileBrowser({
 
   return (
     <div key={`${organization.organization?.id}-${user.user?.id}`}>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <h1 className="text-4xl font-bold text-white">{title}</h1>
-        <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-          <SearchBar query={query} setQuery={setQuery} />
-          <div className="w-full sm:w-auto">
+      <div className="flex flex-col gap-6 mb-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-4xl font-bold text-white">{title}</h1>
+          <div className="hidden sm:block">
             <UploadButton />
           </div>
+        </div>
+        <div className="w-full max-w-2xl mx-auto">
+          <SearchBar query={query} setQuery={setQuery} />
+        </div>
+        <div className="sm:hidden w-full">
+          <UploadButton className="w-full" />
         </div>
       </div>
 

@@ -39,7 +39,7 @@ const formSchema = z.object({
     .refine((files) => files.length > 0, `Required`),
 });
 
-export function UploadButton() {
+export function UploadButton({ className }: { className?: string }) {
   const organization = useOrganization();
   const user = useUser();
   const generateUploadUrl = useMutation(api.files.generateUploadUrl);
@@ -150,7 +150,7 @@ export function UploadButton() {
     <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>
       <DialogTrigger asChild>
         <Button 
-          className="bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-white/10 text-white hover:bg-gradient-to-r hover:from-cyan-500/30 hover:to-teal-500/30 hover:shadow-lg hover:shadow-cyan-500/20 transition-all"
+          className={`bg-gradient-to-r from-cyan-500/20 to-teal-500/20 border border-white/10 text-white hover:bg-gradient-to-r hover:from-cyan-500/30 hover:to-teal-500/30 hover:shadow-lg hover:shadow-cyan-500/20 transition-all ${className || ''}`}
           onClick={() => setIsFileDialogOpen(true)}
         >
           Upload File
