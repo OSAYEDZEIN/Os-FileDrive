@@ -1,21 +1,13 @@
-"use client";
-
-import { FileBrowser } from "../_components/file-browser";
-import { usePathname, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { FileBrowserSkeleton } from "../_components/file-browser-skeleton";
+import { FileBrowserContent } from "./_components/file-browser-content";
 
 export default function FilesPage() {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  
-  // Create a unique key based on the current route
-  const routeKey = `${pathname}?${searchParams.toString()}`;
-
   return (
     <div>
-      <FileBrowser 
-        title="Your Files" 
-        key={routeKey} // This will force a remount when route changes
-      />
+      <Suspense fallback={<FileBrowserSkeleton />}>
+        <FileBrowserContent />
+      </Suspense>
     </div>
   );
 }
