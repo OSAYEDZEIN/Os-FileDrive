@@ -31,13 +31,16 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Protect } from "@clerk/nextjs";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export function FileCardActions({
   file,
   isFavorited,
+  className,
 }: {
   file: Doc<"files"> & { url: string | null };
   isFavorited: boolean;
+  className?: string;
 }) {
   const deleteFile = useMutation(api.files.deleteFile);
   const restoreFile = useMutation(api.files.restoreFile);
@@ -76,7 +79,7 @@ export function FileCardActions({
               }}
               className="bg-gradient-to-r from-red-500/90 to-red-600/90 hover:from-red-500 hover:to-red-600 transition-all border-0 text-white"
             >
-              Delete Permanently
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -84,8 +87,13 @@ export function FileCardActions({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="p-1.5 rounded-full hover:bg-white/10 transition-colors focus:outline-none">
-            <MoreVertical className="w-4 h-4 text-gray-300" />
+          <button 
+            className={cn(
+              "p-1.5 rounded-full hover:bg-accent/50 transition-colors focus:outline-none",
+              className
+            )}
+          >
+            <MoreVertical className="w-4 h-4 text-foreground/70" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent 

@@ -137,14 +137,15 @@ export function UploadButton({ className }: { className?: string }) {
   }
 
   let orgId: string | undefined = undefined;
+  const isPersonal = organization.isLoaded && !organization.organization;
+  
   if (organization.isLoaded && user.isLoaded) {
     orgId = organization.organization?.id ?? user.user?.id;
+    console.log("Current orgId:", orgId, "Personal mode:", isPersonal);
   }
 
   const [isFileDialogOpen, setIsFileDialogOpen] = useState(false);
-
   const createFile = useMutation(api.files.createFile);
-  const isPersonal = organization.isLoaded && !organization.organization;
 
   return (
     <Dialog open={isFileDialogOpen} onOpenChange={setIsFileDialogOpen}>

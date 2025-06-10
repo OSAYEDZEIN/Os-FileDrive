@@ -47,11 +47,14 @@ export async function hasAccessToOrg(
     return { user };
   }
 
-  const hasAccess =
-    user.orgIds?.some((item) => item.orgId === orgId) ||
-    user.tokenIdentifier.includes(orgId);
+  // Check if user is a member of the organization through their orgIds array
+  const isOrgMember = user.orgIds?.some(item => item.orgId === orgId);
+  
+  // If not a member, check if the orgId is in the user's tokenIdentifier (legacy check)
+  const hasAccess = isOrgMember || user.tokenIdentifier.includes(orgId);
 
   if (!hasAccess) {
+    console.log(`User ${user._id} does not have access to org ${orgId}`);
     return null;
   }
 
@@ -95,20 +98,45 @@ export const createFile = mutation({
     type: fileTypes,
   },
   async handler(ctx, args) {
-    const hasAccess = await hasAccessToOrg(ctx, args.orgId);
-
-    if (!hasAccess) {
-      throw new ConvexError("you do not have access to this org");
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("You must be logged in to upload a file");
     }
 
-    // Strict: Prevent duplicate file names within the same org (excluding deleted files)
-    const filesWithSameOrg = await ctx.db
+    // Get the user from the database
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_tokenIdentifier", (q) =>
+        q.eq("tokenIdentifier", identity.tokenIdentifier)
+      )
+      .first();
+
+    if (!user) {
+      throw new ConvexError("User not found in database");
+    }
+
+    // Check if user is part of the organization they're trying to upload to
+    const isPersonalWorkspace = args.orgId === user._id || args.orgId === user.tokenIdentifier;
+    const isOrgMember = user.orgIds?.some(org => org.orgId === args.orgId);
+    
+    if (!isPersonalWorkspace && !isOrgMember) {
+      console.log(`User ${user._id} attempted to upload to org ${args.orgId} without access`);
+      console.log(`User orgs:`, user.orgIds);
+      throw new ConvexError("You do not have permission to upload to this organization");
+    }
+
+    // Check for duplicate file names in the same organization
+    const existingFiles = await ctx.db
       .query("files")
       .withIndex("by_orgId", q => q.eq("orgId", args.orgId))
       .collect();
-    const existing = filesWithSameOrg.find(file => file.name === args.name && !file.shouldDelete);
-    if (existing) {
-      throw new ConvexError(`A file named '${args.name}' already exists in this workspace. Please choose a unique name.`);
+      
+    const duplicate = existingFiles.find(
+      file => file.name === args.name && !file.shouldDelete
+    );
+    
+    if (duplicate) {
+      throw new ConvexError(`A file named '${args.name}' already exists in this workspace`);
     }
 
     await ctx.db.insert("files", {
@@ -116,7 +144,8 @@ export const createFile = mutation({
       orgId: args.orgId,
       fileId: args.fileId,
       type: args.type,
-      userId: hasAccess.user._id,
+      userId: user._id,
+      shouldDelete: false,
     });
   },
 });

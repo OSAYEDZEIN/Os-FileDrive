@@ -178,7 +178,12 @@ export function FileBrowser({
         </TabsContent>
         <TabsContent value="table">
           <div className="overflow-x-auto min-w-full">
-            <DataTable columns={columns} data={modifiedFiles} showUserColumn={!!organization.organization} />
+            <DataTable 
+            columns={columns} 
+            data={modifiedFiles} 
+            showUserColumn={!!organization.organization} 
+            isLoading={isLoading}
+          />
           </div>
         </TabsContent>
       </Tabs>
