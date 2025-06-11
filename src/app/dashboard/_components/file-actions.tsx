@@ -167,8 +167,8 @@ export function FileCardActions({
               }}
               className={
                 file.shouldDelete
-                  ? "flex gap-2 items-center px-3 py-2 text-sm rounded-lg cursor-pointer text-green-400 hover:bg-white/10 focus:bg-white/10 focus:text-green-300"
-                  : "flex gap-2 items-center px-3 py-2 text-sm rounded-lg cursor-pointer text-red-400 hover:bg-red-500/10 hover:text-red-300 focus:bg-red-500/10 focus:text-red-300"
+                  ? "group flex gap-2 items-center px-3 py-2 text-sm rounded-lg cursor-pointer text-green-400 hover:bg-white/10 focus:bg-white/10 focus:text-green-300"
+                  : "group flex gap-2 items-center px-3 py-2 text-sm rounded-lg cursor-pointer text-red-400 hover:bg-red-500/10 hover:text-red-300 focus:bg-red-500/10 focus:text-red-300"
               }
             >
               {file.shouldDelete ? (
@@ -178,7 +178,7 @@ export function FileCardActions({
                 </>
               ) : (
                 <>
-                  <TrashIcon className="w-4 h-4" />
+                  <TrashIcon className="w-4 h-4 text-red-400 group-hover:text-red-300" />
                   <span>Delete</span>
                 </>
               )}
