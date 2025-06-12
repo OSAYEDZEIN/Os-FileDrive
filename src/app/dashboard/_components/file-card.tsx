@@ -7,9 +7,10 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatRelative } from "date-fns";
+import mammoth from "mammoth"; // Add this line
 
 import { Doc } from "../../../../convex/_generated/dataModel";
-import { FileTextIcon, GanttChartIcon, ImageIcon, DownloadIcon, Share2Icon } from "lucide-react";
+import { FileTextIcon, GanttChartIcon, ImageIcon, DownloadIcon, Share2Icon, FileText } from "lucide-react";
 import { ReactNode, useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
@@ -53,6 +54,43 @@ function CSVPreview({ url }: { url: string }) {
   );
 }
 
+function DocxPreview({ url }: { url: string }) {
+  const [htmlContent, setHtmlContent] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAndConvertDocx = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        const result = await mammoth.convertToHtml({ arrayBuffer });
+        setHtmlContent(result.value);
+      } catch (err) {
+        console.error('Error converting DOCX:', err);
+        setError('Failed to load document preview');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAndConvertDocx();
+  }, [url]);
+
+  if (isLoading) return <div className="text-gray-500">Loading document preview...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
+
+  return (
+    <div className="w-full h-full">
+      <div 
+        className="prose max-w-none p-4 mx-auto w-full h-full overflow-y-auto"
+        dangerouslySetInnerHTML={{ __html: htmlContent }}
+      />
+    </div>
+  );
+}
+
 function TextPreview({ url }: { url: string }) {
   const [content, setContent] = useState<string>("");
   useEffect(() => {
@@ -83,6 +121,7 @@ export function FileCard({
     image: <ImageIcon className="text-gray-900" />,
     pdf: <FileTextIcon className="text-gray-900" />,
     csv: <GanttChartIcon className="text-gray-900" />,
+    docx: <FileTextIcon className="text-gray-900" />,
   } as Record<Doc<"files">["type"], ReactNode>;
 
   const handleDownload = () => {
@@ -148,10 +187,12 @@ export function FileCard({
                 <GanttChartIcon className="w-10 h-10 text-emerald-400" />
                 <span className="text-xs text-gray-300 mt-2 font-medium">CSV File</span>
               </div>
-            ) : file.type === "pdf" ? (
-              <div className="flex flex-col items-center justify-center w-full h-40 p-4 bg-gradient-to-br from-red-500/10 to-red-600/10 rounded-lg border border-red-500/20">
-                <FileTextIcon className="w-10 h-10 text-red-400" />
-                <span className="text-xs text-gray-300 mt-2 font-medium">PDF Document</span>
+            ) : file.type === "pdf" || file.type === "docx" ? (
+              <div className="flex flex-col items-center justify-center w-full h-40 p-4 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-lg border border-blue-500/20">
+                <FileTextIcon className="w-10 h-10 text-blue-400" />
+                <span className="text-xs text-gray-300 mt-2 font-medium">
+                  {file.type === "pdf" ? "PDF Document" : "Word Document"}
+                </span>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center w-full h-40 p-4 bg-gradient-to-br from-blue-500/10 to-blue-600/10 rounded-lg border border-blue-500/20">
@@ -207,6 +248,12 @@ export function FileCard({
             </div>
           ) : file.type === "csv" && file.url ? (
             <CSVPreview url={file.url} />
+          ) : file.type === "docx" && file.url ? (
+            <div className="w-full h-[60vh] flex justify-center items-center bg-white rounded-lg">
+              <div className="w-full h-full">
+                <DocxPreview url={file.url} />
+              </div>
+            </div>
           ) : file.url && /\.(txt|md|json|js|ts|css|html|log)$/i.test(file.name) ? (
             <TextPreview url={file.url} />
           ) : (
