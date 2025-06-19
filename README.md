@@ -127,8 +127,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Clerk](https://clerk.com/) - Authentication and User Management
 - [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework
 
-## 📧 Contact
-
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - your.email@example.com
-
-Project Link: [https://github.com/yourusername/osi-drive](https://github.com/yourusername/osi-drive)
